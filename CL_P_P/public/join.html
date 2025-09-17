@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Join Classroom</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="center">
+    <div class="card" style="width:420px;">
+      <h3>Joining classroom…</h3>
+      <p id="msg">Please wait.</p>
+      <p><a class="link" href="index.html">Go to login</a></p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    (async () => {
+      const params = new URLSearchParams(location.search);
+      const id = params.get('classroom');
+      const token = localStorage.getItem('token');
+      const msg = document.getElementById('msg');
+
+      if (!token) {
+        msg.textContent = '⚠️ Not logged in. Redirecting...';
+        setTimeout(() => location.href = 'index.html', 1200);
+        return;
+      }
+
+      try {
+        const res = await apiAuth('/api/classrooms/' + id + '/join', {});
+        if (res?.success) {
+          msg.textContent = '✅ Successfully joined! Redirecting...';
+          // Fetch user info to decide dashboard
+          const me = await apiAuth('/api/me');
+          setTimeout(() => {
+            if (me?.user?.role === 'teacher') {
+              location.href = 'teacher-dashboard.html';
+            } else {
+              location.href = 'student-dashboard.html';
+            }
+          }, 1000);
+        } else {
+          msg.textContent = "❌ " + (res?.error || "Failed to join classroom.");
+        }
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "❌ Server error while joining.";
+      }
+    })();
+  </script>
+</body>
+</html>

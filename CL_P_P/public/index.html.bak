@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Program Classroom - Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="center">
+    <div class="card" style="width:440px;">
+      <h2>🚀 Program Classroom</h2>
+      <p>Login to continue, or <a class="link" href="register.html">register</a>.</p>
+      <div class="grid">
+        <input id="email" class="input" placeholder="Email">
+        <input id="password" class="input" type="password" placeholder="Password">
+        <button class="btn" id="loginBtn">Login</button>
+        <button class="btn secondary" id="toggleTheme">Toggle Theme</button>
+      </div>
+      <footer>New here? <a class="link" href="register.html">Create an account</a></footer>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    document.getElementById('toggleTheme').onclick=()=>{
+      const cur=document.body.getAttribute('data-theme')||'dark';
+      document.body.setAttribute('data-theme', cur==='dark'?'light':'dark');
+    };
+    document.getElementById('loginBtn').onclick=async()=>{
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const res = await api('/api/login', { email, password });
+      if(res?.token){
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        if(res.user.role==='teacher') location.href='teacher-dashboard.html';
+        else location.href='student-dashboard.html';
+      } else alert(res?.error||'Login failed');
+    };
+  </script>
+
+<!-- Lectures Section -->
+<div id="lectures" class="tab" style="display:none;">
+  <h2>Lectures</h2>
+  <div id="lectureUploadArea">
+    <label for="lectureFile">Choose a file:</label>
+    <input type="file" id="lectureFile" accept=".pdf,.doc,.docx,.mp4,.avi,.mkv" />
+    <button onclick="uploadLecture()">Upload</button>
+  </div>
+  <div id="lecturesList"></div>
+</div>
+
+<!-- Chat Section -->
+<div id="chat" class="tab" style="display:none;">
+  <h2>Class Chat</h2>
+  <div id="chatMessages" style="border:1px solid #ccc; height:200px; overflow-y:scroll; margin-bottom:10px;"></div>
+  <input type="text" id="chatInput" placeholder="Type message..." style="width:70%;" onkeydown="if(event.key==='Enter'){sendChat();}">
+  <button onclick="sendChat()">Send</button>
+  <br><br>
+  <input type="text" id="dmTarget" placeholder="Friend College ID">
+  <button onclick="sendDirectMessage()">Send Direct</button>
+  <button onclick="broadcastMessage()">Broadcast to University</button>
+</div>
+
+<!-- Chatbot Section -->
+<div id="chatbot" class="tab" style="display:none;">
+  <h2>Chatbot</h2>
+  <div id="chatbotMessages" style="border:1px solid #ccc; height:200px; overflow-y:scroll; margin-bottom:10px;"></div>
+  <input type="text" id="chatbotInput" placeholder="Ask AI..." style="width:70%;" onkeydown="if(event.key==='Enter'){sendChatbot();}">
+  <button onclick="sendChatbot()">Send</button>
+</div>
+
+</body>
+</html>

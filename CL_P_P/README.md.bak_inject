@@ -1,0 +1,60 @@
+# Program Classroom (Vanilla, WebRTC, Role-based)
+
+**All-in-one** classroom platform using **Express + Socket.IO + SQLite** and **Vanilla HTML/CSS/JS**.
+- Teacher/Student registration and login
+- Teachers create classrooms; Students join via **code or invite link**
+- Classroom page with tabs: **Lectures, Chat, Meet, Chatbot**
+- Real **WebRTC Meet** (camera/mic + screen share) with:
+  - Student: Join, Mute, Unmute, Leave
+  - Teacher: Create (implicit), Invite, Kick (by name), Mute/Unmute self, Leave, End Meet
+- Discord-like theme with light/dark toggle
+
+## Quick Start
+```bash
+cd server
+npm install
+npm start
+# open http://localhost:5000
+```
+
+### Environment
+- `.env` already included:
+```
+PORT=5000
+JWT_SECRET=changeme123
+```
+
+## Flows
+### Register & Login
+- Teachers: name, email, university, college, password → login → **Teacher Dashboard**
+- Students: name, email, university, college, **student ID**, password → login → **Student Dashboard**
+
+### Teacher Dashboard
+- **Create Classroom** → gets a code (e.g., `X2F9QK`)
+- List of classrooms (hover actions):
+  - **Open** → classroom.html?id=ID
+  - **Invite** → copies link `http://localhost:5000/join.html?classroom=ID&code=CODE`
+
+### Student Dashboard
+- **Join Classroom** by code
+- See list of joined classrooms → open
+
+### Classroom
+Tabs:
+- **Lectures**: stub (you can wire `/api/uploads/:classroomId`)
+- **Chat**: class chat via Socket.IO
+- **Meet**: WebRTC video grid — role-based controls
+- **Chatbot**: placeholder
+
+## Notes
+- DB file auto-creates at `server/classroom.db`
+- No demo users included — register fresh accounts
+- Everything is served from Express on **http://localhost:5000**
+
+## Screenshots
+(Placeholders included in `/screenshots` and referenced here)
+
+![Teacher Dashboard](screenshots/teacher-dashboard.png)
+![Student Dashboard](screenshots/student-dashboard.png)
+![Classroom View](screenshots/classroom-view.png)
+![Meet Controls](screenshots/meet-controls.png)

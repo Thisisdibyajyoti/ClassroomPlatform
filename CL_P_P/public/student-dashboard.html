@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Dashboard - Program Classroom</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar slide-in">
+      <h2>📚 Student Dashboard</h2>
+      <div id="meBadge" class="badge"></div>
+      <button id="joinClassBtn" class="btn">➕ Join Classroom</button>
+      <div style="flex:1"></div>
+      <button id="logoutBtn" class="btn danger">🚪 Logout</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content fade-in">
+      <h2>My Classrooms</h2>
+      <div id="myClasses" class="list"></div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    async function render() {
+      const list = document.getElementById("myClasses");
+      const data = await apiAuth("/api/classrooms/mine");
+
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        list.innerHTML = "<p class='muted fade-in'>No classrooms joined yet.</p>";
+        return;
+      }
+
+      list.innerHTML = "";
+      data.forEach(c => {
+        const el = document.createElement("div");
+        el.className = "class-card pop-in";
+        el.innerHTML = `
+          <div>
+            <div class="class-title"><strong>${c.name}</strong></div>
+            <div class="class-sub">Code: ${c.code || ""} | ID: ${c.id}</div>
+          </div>
+          <button class="btn sm open" data-id="${c.id}">Open</button>
+        `;
+        list.appendChild(el);
+      });
+
+      document.querySelectorAll(".open").forEach(btn => {
+        btn.onclick = () => {
+          location.href = "classroom.html?id=" + btn.dataset.id;
+        };
+      });
+    }
+
+    document.getElementById("joinClassBtn").onclick = async () => {
+      const code = prompt("Enter classroom code:");
+      if (!code) return;
+      const res = await apiAuth("/api/joinByCode", { code });
+      if (res?.success) {
+        alert("Joined classroom: " + (res.classroom?.name || ""));
+        render();
+      } else {
+        alert(res?.error || "Failed to join classroom");
+      }
+    };
+
+    document.getElementById("logoutBtn").onclick = () => {
+      localStorage.clear();
+      location.href = "index.html";
+    };
+
+    me().then(({ user }) => {
+      if (user.role !== "student") {
+        location.href = "teacher-dashboard.html";
+        return;
+      }
+      document.getElementById("meBadge").textContent = `${user.name} • ${user.role}`;
+      render();
+    });
+  </script>
+</body>
+</html>

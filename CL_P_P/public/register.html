@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register - Program Classroom</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="center">
+    <div class="card" style="width:520px;">
+      <h2>Create your account</h2>
+      <div class="grid cols-2">
+        <input id="name" class="input" placeholder="Full Name" required>
+        <input id="email" type="email" class="input" placeholder="Email">
+        <input id="phone" class="input" placeholder="Phone Number">
+        <input id="university" class="input" placeholder="University">
+        <input id="college" class="input" placeholder="College">
+        <select id="role" class="input" required>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+        <input id="student_id" class="input" placeholder="Student ID (students only)">
+        <input id="password" type="password" class="input" placeholder="Password" required>
+        <button id="registerBtn" class="btn">Register</button>
+      </div>
+      <footer>
+        Already have an account? 
+        <a class="link" href="index.html">Login</a>
+      </footer>
+      <p id="msg" style="margin-top:10px; font-size:14px; color:var(--muted);"></p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    const roleSel = document.getElementById('role');
+    const studentId = document.getElementById('student_id');
+    const msg = document.getElementById('msg');
+
+    roleSel.onchange = () => {
+      studentId.style.display = roleSel.value === 'student' ? 'block' : 'none';
+    };
+    roleSel.onchange();
+
+    document.getElementById('registerBtn').onclick = async () => {
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        university: document.getElementById('university').value.trim(),
+        college: document.getElementById('college').value.trim(),
+        role: roleSel.value,
+        student_id: document.getElementById('student_id').value.trim(),
+        password: document.getElementById('password').value
+      };
+
+      if (!payload.name || !payload.password || (!payload.email && !payload.phone)) {
+        msg.textContent = "⚠️ Name, password, and either email or phone are required.";
+        return;
+      }
+      if (payload.role === 'student' && !payload.student_id) {
+        msg.textContent = "⚠️ Student ID is required for students.";
+        return;
+      }
+
+      try {
+        const res = await api('/api/register', payload);
+        if (res?.success) {
+          msg.textContent = "✅ Registered successfully! Redirecting...";
+          setTimeout(() => location.href = 'index.html', 1200);
+        } else {
+          msg.textContent = "❌ " + (res?.error || "Registration failed");
+        }
+      } catch {
+        msg.textContent = "❌ Server error. Please try again.";
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teacher Dashboard - Program Classroom</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar slide-in">
+      <h2>☰ Teacher Dashboard</h2>
+      <button id="createClassBtn" class="btn">➕ Create Classroom</button>
+      <div style="flex:1"></div>
+      <button id="themeToggle" class="btn secondary">🌓 Toggle Theme</button>
+      <button id="logoutBtn" class="btn danger">🚪 Logout</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content fade-in">
+      <h1>My Classrooms</h1>
+      <div id="myClasses" class="list"></div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    async function render() {
+      const list = document.getElementById("myClasses");
+      const data = await apiAuth("/api/classrooms/mine");
+
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        list.innerHTML = "<p class='muted fade-in'>No classrooms created yet.</p>";
+        return;
+      }
+
+      list.innerHTML = "";
+      data.forEach(c => {
+        const el = document.createElement("div");
+        el.className = "class-card pop-in";
+        el.innerHTML = `
+          <div>
+            <div class="class-title"><strong>${c.name}</strong></div>
+            <div class="class-sub">Code: ${c.code || ""} | ID: ${c.id}</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn sm open" data-id="${c.id}">Open</button>
+            <button class="btn sm invite" data-id="${c.id}" data-code="${c.code}">Invite</button>
+          </div>
+        `;
+        list.appendChild(el);
+      });
+
+      document.querySelectorAll(".open").forEach(btn => {
+        btn.onclick = () => {
+          location.href = "classroom.html?id=" + btn.dataset.id;
+        };
+      });
+
+      document.querySelectorAll(".invite").forEach(btn => {
+        btn.onclick = () => {
+          const link = `${location.origin}/join.html?code=${btn.dataset.code}`;
+          navigator.clipboard.writeText(link);
+          alert("Invite link copied: " + link);
+        };
+      });
+    }
+
+    document.getElementById("createClassBtn").onclick = async () => {
+      const name = prompt("Enter classroom name:");
+      if (!name) return;
+      const res = await apiAuth("/api/classrooms", { name });
+      if (res?.id) {
+        alert("Classroom created!");
+        render();
+      } else {
+        alert(res?.error || "Failed to create classroom");
+      }
+    };
+
+    document.getElementById("logoutBtn").onclick = () => {
+      localStorage.clear();
+      location.href = "index.html";
+    };
+
+    document.getElementById("themeToggle").onclick = () => {
+      const cur = document.body.getAttribute("data-theme");
+      document.body.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+    };
+
+    render();
+  </script>
+</body>
+</html>
